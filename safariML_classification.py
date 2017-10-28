@@ -89,11 +89,32 @@ print(type(skfolds)) #skfolds is class
 for train_index, test_index in skfolds.split(X_train, y_train_5):
     clone_clf = clone(sgd_clf)
     X_train_folds = X_train[train_index]
+    X_train_folds
     y_train_folds = y_train_5[train_index]
+    y_train_folds
     X_test_fold = X_train[test_index]
     y_test_fold = y_train_5[test_index]
 
     clone_clf.fit(X_train_folds, y_train_folds)
     y_pred = clone_clf.predict(X_test_fold)
+    y_pred
     n_correct = sum(y_pred == y_test_fold)
+    n_correct
     print(n_correct / len(y_pred))  # prints 0.9502, 0.96565 and 0.96495
+    
+#-------------------------------
+# claaifier for non 5     
+
+from sklearn.base import BaseEstimator
+from sklearn.model_selection import cross_val_score
+
+class Never5Classifier(BaseEstimator):
+    def fit(self, X, y=None):
+        pass
+    def predict(self, X):
+        return np.zeros((len(X), 1), dtype=bool)    
+    
+never_5_clf = Never5Classifier()
+cross_val_score(never_5_clf, X_train, y_train_5, cv=3, scoring="accuracy")    
+#--> This demonstrates why accuracy is generally not the preferred performance measure for classifiers, especially when you are dealing with skewed datasets (i.e., when some classes are much more frequent than others).
+    
