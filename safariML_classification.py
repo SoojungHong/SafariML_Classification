@@ -117,4 +117,24 @@ class Never5Classifier(BaseEstimator):
 never_5_clf = Never5Classifier()
 cross_val_score(never_5_clf, X_train, y_train_5, cv=3, scoring="accuracy")    
 #--> This demonstrates why accuracy is generally not the preferred performance measure for classifiers, especially when you are dealing with skewed datasets (i.e., when some classes are much more frequent than others).
-    
+
+#-----------------------------------------------------------------------
+# Better way to evaluate the performance : Looking at confusion matrix  
+from sklearn.model_selection import cross_val_predict
+y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)   #return the predictions
+y_train_pred
+
+from sklearn.metrics import confusion_matrix
+confusion_matrix(y_train_5, y_train_pred)
+
+#confusion_matrix(y_train_5, y_train_perfect_predictions)
+
+#--------------------------
+# Precision and Recall 
+from sklearn.metrics import precision_score, recall_score
+precision_score(y_train_5, y_train_pred) #precision score = True positive / (True positive + False positive)
+
+#-------------------
+# F1 Score is Harmonic mean (F1 SCore = True Positive /(True Positive + (False Negative + False Positive )/2))
+from sklearn.metrics import f1_score
+f1_score(y_train_5, y_train_pred)
