@@ -178,3 +178,4 @@ plt.show()
 # ROC AUC (Receiver Operating Characteristics Area Under the Curve)
 from sklearn.metrics import roc_auc_score
 roc_auc_score(y_train_5, y_scores)
+f1_score(y_train_5, y_train_pred)
