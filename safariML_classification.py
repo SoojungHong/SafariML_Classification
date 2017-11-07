@@ -179,3 +179,20 @@ plt.show()
 from sklearn.metrics import roc_auc_score
 roc_auc_score(y_train_5, y_scores)
 f1_score(y_train_5, y_train_pred)
+
+
+#------------------------------------------------------------------------------------
+# comparision of Random Forest Classifier and Stochastic Gradient Descent classifier
+# using ROC curve and ROC AUC curve
+from sklearn.ensemble import RandomForestClassifier
+forest_clf = RandomForestClassifier(random_state=42)
+forest_clf
+y_probas_forest = cross_val_predict(forest_clf, X_train, y_train_5, cv=3, method="predict_proba")
+y_scores_forest = y_probas_forest[:,1] # score = proba of positive class
+fpr_forest, tpr_forest, thresholds_forest = roc_curve(y_train_5, y_scores_forest)
+plt.plot(fpr, tpr, "b:", label="SGD")
+plot_roc_curve(fpr_forest, tpr_forest, "Random Forest")
+plt.legend(loc="lower right")
+plt.show()
+
+roc_auc_score(y_train_5, y_scores_forest)
