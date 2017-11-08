@@ -66,10 +66,11 @@ import numpy as np
 shuffle_index = np.random.permutation(60000)
 shuffle_index
 X_train, y_train = X_train[shuffle_index], y_train[shuffle_index]
+y_train
 
 # target vector this classifier
 y_train_5 = (y_train == 5)  # True for all 5s, False for all other digits.
-y_test_5 = (y_test == 5)
+y_train_5
 
 # pick a classifier and train it
 from sklearn.linear_model import SGDClassifier
@@ -196,3 +197,49 @@ plt.legend(loc="lower right")
 plt.show()
 
 roc_auc_score(y_train_5, y_scores_forest)
+
+
+#----------------------------------------
+# multiclass (multinomial) classifier 
+y_train #y_train is target class from 0 to 9
+y_train_5
+sgd_clf.fit(X_train, y_train) # attention! y_train, not y_train_5
+sgd_clf.predict([some_digit])
+
+some_digit_scores = sgd_clf.decision_function([some_digit])
+some_digit_scores 
+
+np.argmax(some_digit_scores)
+sgd_clf.classes_
+sgd_clf.classes_[5]
+
+#----------------------------------------------------------------------
+# using Scikit learn  one vs one classifier , one vs rest classifier 
+from sklearn.multiclass import OneVsOneClassifier
+ovo_clf = OneVsOneClassifier(SGDClassifier(random_state = 42))
+ovo_clf.fit(X_train, y_train)
+ovo_clf.predict([some_digit])
+len(ovo_clf.estimators_)
+ovo_clf.estimators_
+
+forest_clf.fit(X_train, y_train)
+forest_clf.predict([some_digit])
+forest_clf.predict_proba([some_digit])
+cross_val_score(sgd_clf, X_train, y_train, cv=3, scoring="accuracy")
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train.astype(np.float64))
+cross_val_score(sgd_clf, X_train_scaled, y_train, cv=3, scoring="accuracy")
+
+
+#------------------------------------
+# Error Analysis 
+
+# First, look at confusion matrix
+y_train_pred = cross_val_predict(sgd_clf, X_train_scaled, y_train, cv=3)
+y_train_pred
+conf_mx = confusion_matrix(y_train, y_train_pred)
+conf_mx
+plt.matshow(conf_mx, cmap=plt.cm.gray)
+plt.show()
