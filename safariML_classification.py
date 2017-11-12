@@ -121,10 +121,14 @@ cross_val_score(never_5_clf, X_train, y_train_5, cv=3, scoring="accuracy")
 #-----------------------------------------------------------------------
 # Better way to evaluate the performance : Looking at confusion matrix  
 from sklearn.model_selection import cross_val_predict
+X_train # data for training
+y_train # lable for data (i.e. the number of image) 
 y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)   #return the predictions
 y_train_pred
 
 from sklearn.metrics import confusion_matrix
+y_train_5
+y_train_pred
 confusion_matrix(y_train_5, y_train_pred)
 
 #confusion_matrix(y_train_5, y_train_perfect_predictions)
@@ -134,7 +138,25 @@ confusion_matrix(y_train_5, y_train_pred)
 from sklearn.metrics import precision_score, recall_score
 precision_score(y_train_5, y_train_pred) #precision score = True positive / (True positive + False positive)
 
+from sklearn.metrics import precision_score, recall_score
+precision_score(y_train_5, y_train_pred)
+recall_score(y_train_5, y_train_pred)
+
+
 #-------------------
 # F1 Score is Harmonic mean (F1 SCore = True Positive /(True Positive + (False Negative + False Positive )/2))
 from sklearn.metrics import f1_score
 f1_score(y_train_5, y_train_pred)
+y_scores = sgd_clf.decision_function([some_digit])
+y_scores
+threshold = 0
+y_some_digit_pred = (y_scores > threshold)
+y_some_digit_pred
+
+#-----------------------
+# return decision score 
+y_scores = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3, method="decision_function")
+y_scores
+
+from sklearn.metrics import precision_recall_curve
+precisions, recalls, thresholds = precision_recall_curve(y_train_5, y_scores)
