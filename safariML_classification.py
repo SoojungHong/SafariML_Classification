@@ -66,10 +66,11 @@ import numpy as np
 shuffle_index = np.random.permutation(60000)
 shuffle_index
 X_train, y_train = X_train[shuffle_index], y_train[shuffle_index]
+y_train
 
 # target vector this classifier
 y_train_5 = (y_train == 5)  # True for all 5s, False for all other digits.
-y_test_5 = (y_test == 5)
+y_train_5
 
 # pick a classifier and train it
 from sklearn.linear_model import SGDClassifier
@@ -121,14 +122,10 @@ cross_val_score(never_5_clf, X_train, y_train_5, cv=3, scoring="accuracy")
 #-----------------------------------------------------------------------
 # Better way to evaluate the performance : Looking at confusion matrix  
 from sklearn.model_selection import cross_val_predict
-X_train # data for training
-y_train # lable for data (i.e. the number of image) 
 y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)   #return the predictions
 y_train_pred
 
 from sklearn.metrics import confusion_matrix
-y_train_5
-y_train_pred
 confusion_matrix(y_train_5, y_train_pred)
 
 #confusion_matrix(y_train_5, y_train_perfect_predictions)
@@ -138,25 +135,111 @@ confusion_matrix(y_train_5, y_train_pred)
 from sklearn.metrics import precision_score, recall_score
 precision_score(y_train_5, y_train_pred) #precision score = True positive / (True positive + False positive)
 
-from sklearn.metrics import precision_score, recall_score
-precision_score(y_train_5, y_train_pred)
-recall_score(y_train_5, y_train_pred)
-
-
 #-------------------
 # F1 Score is Harmonic mean (F1 SCore = True Positive /(True Positive + (False Negative + False Positive )/2))
 from sklearn.metrics import f1_score
 f1_score(y_train_5, y_train_pred)
-y_scores = sgd_clf.decision_function([some_digit])
-y_scores
-threshold = 0
-y_some_digit_pred = (y_scores > threshold)
-y_some_digit_pred
 
-#-----------------------
-# return decision score 
+
+#-------------------------------------------------------------------
+# you can compute precision and recall for all possible threshold
 y_scores = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3, method="decision_function")
-y_scores
 
 from sklearn.metrics import precision_recall_curve
 precisions, recalls, thresholds = precision_recall_curve(y_train_5, y_scores)
+def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
+    plt.plot(thresholds, precisions[:-1], "b--", label="Precision") #precisions[:-1] means everything except the last item
+    plt.plot(thresholds, recalls[:-1], "g--", label="Recall" )
+    plt.xlabel("Threshold")
+    plt.legend(loc="center left")
+    plt.ylim([0, 1]) #ylim is getting y limits in axis 
+    
+plot_precision_recall_vs_threshold(precisions, recalls, thresholds)
+plt.show()    
+
+
+#----------------------------------------------------------------------------------
+# ROC (Receiver Operating Curve) - plot true positive rate vs. false positive rate
+# ROC plot sensitivity(recall) versus 1-specificity
+# specificity = true negative rate
+from sklearn.metrics import roc_curve
+fpr, tpr, thresholds = roc_curve(y_train_5, y_scores)
+
+def plot_roc_curve(fpr, tpr, label=None):
+    plt.plot(fpr, tpr, linewidth=2, label=label)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.axis([0, 1, 0, 1])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+
+plot_roc_curve(fpr, tpr)
+plt.show()    
+
+#--------------------------------------------------------------------
+# ROC AUC (Receiver Operating Characteristics Area Under the Curve)
+from sklearn.metrics import roc_auc_score
+roc_auc_score(y_train_5, y_scores)
+f1_score(y_train_5, y_train_pred)
+
+
+#------------------------------------------------------------------------------------
+# comparision of Random Forest Classifier and Stochastic Gradient Descent classifier
+# using ROC curve and ROC AUC curve
+from sklearn.ensemble import RandomForestClassifier
+forest_clf = RandomForestClassifier(random_state=42)
+forest_clf
+y_probas_forest = cross_val_predict(forest_clf, X_train, y_train_5, cv=3, method="predict_proba")
+y_scores_forest = y_probas_forest[:,1] # score = proba of positive class
+fpr_forest, tpr_forest, thresholds_forest = roc_curve(y_train_5, y_scores_forest)
+plt.plot(fpr, tpr, "b:", label="SGD")
+plot_roc_curve(fpr_forest, tpr_forest, "Random Forest")
+plt.legend(loc="lower right")
+plt.show()
+
+roc_auc_score(y_train_5, y_scores_forest)
+
+
+#----------------------------------------
+# multiclass (multinomial) classifier 
+y_train #y_train is target class from 0 to 9
+y_train_5
+sgd_clf.fit(X_train, y_train) # attention! y_train, not y_train_5
+sgd_clf.predict([some_digit])
+
+some_digit_scores = sgd_clf.decision_function([some_digit])
+some_digit_scores 
+
+np.argmax(some_digit_scores)
+sgd_clf.classes_
+sgd_clf.classes_[5]
+
+#----------------------------------------------------------------------
+# using Scikit learn  one vs one classifier , one vs rest classifier 
+from sklearn.multiclass import OneVsOneClassifier
+ovo_clf = OneVsOneClassifier(SGDClassifier(random_state = 42))
+ovo_clf.fit(X_train, y_train)
+ovo_clf.predict([some_digit])
+len(ovo_clf.estimators_)
+ovo_clf.estimators_
+
+forest_clf.fit(X_train, y_train)
+forest_clf.predict([some_digit])
+forest_clf.predict_proba([some_digit])
+cross_val_score(sgd_clf, X_train, y_train, cv=3, scoring="accuracy")
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train.astype(np.float64))
+cross_val_score(sgd_clf, X_train_scaled, y_train, cv=3, scoring="accuracy")
+
+
+#------------------------------------
+# Error Analysis 
+
+# First, look at confusion matrix
+y_train_pred = cross_val_predict(sgd_clf, X_train_scaled, y_train, cv=3)
+y_train_pred
+conf_mx = confusion_matrix(y_train, y_train_pred)
+conf_mx
+plt.matshow(conf_mx, cmap=plt.cm.gray)
+plt.show()
