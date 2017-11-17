@@ -243,3 +243,28 @@ conf_mx = confusion_matrix(y_train, y_train_pred)
 conf_mx
 plt.matshow(conf_mx, cmap=plt.cm.gray)
 plt.show()
+
+row_sums = conf_mx.sum(axis=1, keepdims=True)
+norm_conf_mx = conf_mx / row_sums
+norm_conf_mx
+
+np.fill_diagonal(norm_conf_mx, 0)
+plt.matshow(norm_conf_mx, cmap=plt.cm.gray)
+plt.show()
+
+
+#------------------------------
+# Multilabel classification 
+
+from sklearn.neighbors import KNeighborsClassifier
+
+y_train_large = (y_train >= 7)
+y_train_odd = (y_train % 2 == 1)
+y_multilabel = np.c_[y_train_large, y_train_odd]
+knn_clf = KNeighborsClassifier()
+knn_clf.fit(X_train, y_multilabel)
+knn_clf.predict([some_digit])
+
+# comment : on my mac, follows two lines take too much time 
+#y_train_knn_pred = cross_val_score(knn_clf, X_train, y_multilabel, cv=3)
+#f1_score(y_multilabel, y_train_knn_pred, average="macro")
