@@ -88,3 +88,38 @@ sgd_reg = SGDRegressor(n_iter=50, penalty=None, eta0=0.1)
 sgd_reg.fit(X, y.ravel())  #ravel return the continuous flattened array 
 sgd_reg.intercept_
 sgd_reg.coef_
+
+
+#----------------------------------
+# Polynomial Regression
+
+# generate nonlinear data based on simple quadratic equation 
+import numpy as np
+m = 100
+X = 6 * np.random.rand(m, 1) - 3
+X
+y = 0.5 * X**2 + X + 2 + np.random.randn(m,1) #this data is not linear, it is polynomial
+y
+# plot the data
+from matplotlib import pyplot as plt
+plt.plot(X, y, "b.")
+plt.axis([0,3,0,15])
+plt.show()
+
+# polynomial feature to transform our trainig data 
+from sklearn.preprocessing import PolynomialFeatures
+poly_features = PolynomialFeatures(degree=2, include_bias=False) #adding square of feature in training set
+poly_features
+X_poly = poly_features.fit_transform(X) #X_poly now contains the original feature of X plus the square of this feature.
+X_poly
+X[0]
+X_poly[0]
+
+from sklearn import linear_model
+lin_reg = linear_model.LinearRegression()
+lin_reg.fit(X_poly, y)
+lin_reg.intercept_, lin_reg.coef_
+
+y_predict = lin_reg.predict(X_poly)
+y_predict
+
